@@ -1,5 +1,4 @@
 {
-  "name": "rag-webapp",
   "regions": ["sin1"],
   "cleanUrls": true,
   "rewrites": [
