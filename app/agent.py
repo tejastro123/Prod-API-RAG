@@ -39,12 +39,14 @@ class ProductionAgent:
 
         self.primary_llm = ChatOllama(
             model=settings.primary_model,
+            base_url=settings.ollama_base_url,
             temperature=0,
             timeout=30,
             max_retries=0
         )
         self.fallback_llm = ChatOllama(
             model=settings.fallback_model,
+            base_url=settings.ollama_base_url,
             temperature=0,
             timeout=30,
             max_retries=0
