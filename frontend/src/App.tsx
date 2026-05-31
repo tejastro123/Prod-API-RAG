@@ -4,9 +4,10 @@ import { Sidebar } from '@/components/Sidebar'
 import { ChatPage } from '@/pages/ChatPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { ThreadsPage } from '@/pages/ThreadsPage'
+import { ReplayPage } from '@/pages/ReplayPage'
+import { PlaygroundPage } from '@/pages/PlaygroundPage'
 import './index.css'
 import './App.css'
-
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,8 @@ export default function App() {
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/threads" element={<ThreadsPage />} />
+              <Route path="/replay" element={<ReplayPage />} />
+              <Route path="/playground" element={<PlaygroundPage />} />
             </Routes>
           </main>
         </div>
