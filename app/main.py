@@ -16,6 +16,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -87,6 +88,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
+
+# === CORS Middleware ===
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # === Exception Handlers ===
