@@ -9,7 +9,7 @@ services:
     startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12.3"
+        value: "3.13"
       - key: APP_ENV
         value: production
       - key: LOG_LEVEL
@@ -21,9 +21,9 @@ services:
       - key: MAX_RETRIES
         value: "3"
       - key: PRIMARY_MODEL
-        value: gpt-4o-mini
+        value: llama3
       - key: FALLBACK_MODEL
-        value: gpt-4o-mini
+        value: mistral
       - key: OPENAI_API_KEY
         sync: false  # Must be set manually — NEVER commit secrets
       - key: LANGCHAIN_API_KEY
@@ -32,5 +32,7 @@ services:
         value: "true"
       - key: LANGCHAIN_PROJECT
         value: production-api
+      - key: OLLAMA_URL
+        sync: false  # Must be set manually
     healthCheckPath: /health
     autoDeploy: true

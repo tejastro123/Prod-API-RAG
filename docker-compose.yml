@@ -1,3 +1,5 @@
+# @format
+
 services:
   agent-api:
     build: .
