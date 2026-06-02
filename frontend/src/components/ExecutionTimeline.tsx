@@ -178,6 +178,7 @@ export function ExecutionTimeline({
                     fontSize: '0.65rem', color: nodeColor(n.status), fontWeight: 600,
                     flexShrink: 0,
                     transition: 'border-color 200ms',
+                    animation: n.status === 'pending' ? 'blink 1.2s ease-in-out infinite' : 'none',
                   }}>
                     {nodeLabel(n.status, cached, n.node)}
                   </div>

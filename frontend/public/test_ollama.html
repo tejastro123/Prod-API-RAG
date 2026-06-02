@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ollama & Backend Diagnostics</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+    h2 { color: #569cd6; }
+    pre { background: #252526; padding: 15px; border-radius: 5px; border: 1px solid #3c3c3c; overflow: auto; max-height: 300px; }
+    .status { font-weight: bold; }
+    .success { color: #4ec9b0; }
+    .error { color: #f44747; }
+  </style>
+</head>
+<body>
+  <h1>Diagnostics Console</h1>
+  
+  <h2>1. Local FastAPI Health Check (http://localhost:8000/health)</h2>
+  <div id="backend-status" class="status">Testing...</div>
+  <pre id="backend-result">Waiting...</pre>
+
+  <h2>2. Local Ollama Tags (http://localhost:11434/api/tags)</h2>
+  <div id="ollama-status" class="status">Testing...</div>
+  <pre id="ollama-result">Waiting...</pre>
+
+  <script>
+    async function testBackend() {
+      const elStatus = document.getElementById('backend-status');
+      const elResult = document.getElementById('backend-result');
+      try {
+        const res = await fetch('http://localhost:8000/health');
+        const json = await res.json();
+        elStatus.innerHTML = '<span class="success">ONLINE</span>';
+        elResult.textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        elStatus.innerHTML = '<span class="error">OFFLINE / ERROR</span>';
+        elResult.textContent = err.toString();
+      }
+    }
+
+    async function testOllama() {
+      const elStatus = document.getElementById('ollama-status');
+      const elResult = document.getElementById('ollama-result');
+      try {
+        const res = await fetch('http://localhost:11434/api/tags');
+        const json = await res.json();
+        elStatus.innerHTML = '<span class="success">ONLINE</span>';
+        elResult.textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        elStatus.innerHTML = '<span class="error">OFFLINE / ERROR</span>';
+        elResult.textContent = err.toString();
+      }
+    }
+
+    testBackend();
+    testOllama();
+  </script>
+</body>
+</html>

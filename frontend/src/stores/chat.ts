@@ -17,6 +17,7 @@ interface ChatStore {
   createThread: () => void
   deleteThread: (id: string) => void
   setActiveThread: (id: string) => void
+  renameThread: (id: string, title: string) => void
   clearMessages: () => void
 }
 
@@ -59,6 +60,14 @@ export const useChatStore = create<ChatStore>()(
       },
 
       setActiveThread: (id: string) => set({ activeThreadId: id }),
+
+      renameThread: (id: string, title: string) => {
+        set((s) => ({
+          threads: s.threads.map((t) =>
+            t.id === id ? { ...t, title, updatedAt: Date.now() } : t
+          ),
+        }))
+      },
 
       clearMessages: () => {
         const { activeThreadId } = get()
@@ -192,6 +201,34 @@ export const useChatStore = create<ChatStore>()(
                 }
               } else if (event.event === 'security') {
                 metadata.security_notes = event.data.notes
+              } else if (event.event === 'graph_node') {
+                const nodeEvent = event.data
+                set((s) => {
+                  const currentMsgs = s.messages[activeThreadId] ?? []
+                  const updatedMsgs = currentMsgs.map((m) => {
+                    if (m.id === assistantMsgId) {
+                      const currentNodes = m.graphNodes ?? []
+                      const exists = currentNodes.some(
+                        (n) => n.node === nodeEvent.node && n.status === nodeEvent.status
+                      )
+                      let newNodes = currentNodes
+                      if (!exists) {
+                        const startIndex = currentNodes.findIndex(
+                          (n) => n.node === nodeEvent.node && n.status === 'start'
+                        )
+                        if (startIndex !== -1 && nodeEvent.status !== 'start') {
+                          newNodes = [...currentNodes]
+                          newNodes[startIndex] = nodeEvent
+                        } else {
+                          newNodes = [...currentNodes, nodeEvent]
+                        }
+                      }
+                      return { ...m, graphNodes: newNodes }
+                    }
+                    return m
+                  })
+                  return { messages: { ...s.messages, [activeThreadId]: updatedMsgs } }
+                })
               } else if (event.event === 'done') {
                 const final = event.data
                 set((s) => ({

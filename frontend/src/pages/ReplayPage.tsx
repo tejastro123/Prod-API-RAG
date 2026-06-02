@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '@/stores/chat'
 import { relativeTime, formatMs } from '@/lib/utils'
 import type { Message } from '@/types'
+import { DevNavbar } from '@/components/DevNavbar'
 
 // ─── ReplayPage ────────────────────────────────────────────────────────────────
 export function ReplayPage() {
@@ -25,8 +26,10 @@ export function ReplayPage() {
   entries.sort((a, b) => b.timestamp - a.timestamp)
 
   return (
-    <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-      {/* Left: log list */}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px 20px 0 20px' }}>
+      <DevNavbar />
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* Left: log list */}
       <div style={{
         width: 340, flexShrink: 0, borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -120,6 +123,7 @@ export function ReplayPage() {
           </div>
         )}
       </div>
+    </div>
     </div>
   )
 }

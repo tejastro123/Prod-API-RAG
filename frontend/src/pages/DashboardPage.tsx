@@ -1,6 +1,7 @@
 import { useLiveMetrics } from '@/lib/useLiveMetrics'
 import { useChatStore } from '@/stores/chat'
 import { formatMs, formatNumber } from '@/lib/utils'
+import { DevNavbar } from '@/components/DevNavbar'
 
 
 // ─── MiniSparkline (inline SVG, no external lib) ─────────────────────────────
@@ -51,6 +52,7 @@ export function DashboardPage() {
   return (
     <div className="dashboard-page">
       <div className="dashboard-inner">
+        <DevNavbar />
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>

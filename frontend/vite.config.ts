@@ -13,10 +13,10 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://prod-api-rag.onrender.com',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: true,
+        secure: false,
       },
     },
   },

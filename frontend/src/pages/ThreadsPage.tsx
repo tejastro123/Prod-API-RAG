@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '@/stores/chat'
 import { relativeTime } from '@/lib/utils'
+import { DevNavbar } from '@/components/DevNavbar'
 
 
 export function ThreadsPage() {
@@ -20,6 +21,7 @@ export function ThreadsPage() {
   return (
     <div className="threads-page">
       <div className="threads-inner">
+        <DevNavbar />
         {/* Header */}
         <div className="topbar" style={{ height: 'auto', padding: '0 0 4px', border: 'none' }}>
           <div style={{ flex: 1 }}>

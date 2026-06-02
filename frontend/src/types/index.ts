@@ -52,6 +52,12 @@ export type CacheStats      = z.infer<typeof CacheStatsSchema>
 
 export type MessageRole = 'user' | 'assistant'
 
+export interface GraphNodeEvent {
+  node: string
+  status: 'start' | 'done' | 'skip' | 'error'
+  duration_ms?: number
+}
+
 export interface Message {
   id: string
   role: MessageRole
@@ -62,6 +68,7 @@ export interface Message {
   processing_time_ms?: number
   security_notes?: string[]
   isStreaming?: boolean
+  graphNodes?: GraphNodeEvent[]
 }
 
 export interface Thread {

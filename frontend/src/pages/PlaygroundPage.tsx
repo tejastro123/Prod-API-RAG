@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage, parseSSE } from '@/lib/api'
+import { DevNavbar } from '@/components/DevNavbar'
 
 // ─── PlaygroundPage ───────────────────────────────────────────────────────────
 export function PlaygroundPage() {
@@ -102,7 +103,8 @@ export function PlaygroundPage() {
   })()
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px 20px 0 20px' }}>
+      <DevNavbar />
       {/* Topbar */}
       <div className="topbar">
         <div className="topbar-title">API Playground</div>
