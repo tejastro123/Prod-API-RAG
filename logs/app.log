@@ -1,2 +1,6 @@
 {"timestamp": "2026-06-02T11:36:42.592233+00:00", "level": "INFO", "logger": "production-api", "message": "Starting production API...", "module": "main", "function": "lifespan", "environment": "development", "primary_model": "mistral", "tracing_enabled": true}
 {"timestamp": "2026-06-02T11:36:43.274871+00:00", "level": "INFO", "logger": "production-api", "message": "Initializing database...", "module": "main", "function": "lifespan"}
+{"timestamp": "2026-06-02T11:36:45.916694+00:00", "level": "INFO", "logger": "production-api", "message": "PostgreSQL (Neon) database initialized successfully.", "module": "db", "function": "init_db"}
+{"timestamp": "2026-06-02T11:36:46.194583+00:00", "level": "INFO", "logger": "production-api", "message": "Validating Ollama connectivity...", "module": "main", "function": "lifespan"}
+{"timestamp": "2026-06-02T11:36:46.635041+00:00", "level": "INFO", "logger": "production-api", "message": "Ollama is reachable at startup.", "module": "main", "function": "lifespan"}
+{"timestamp": "2026-06-02T11:36:46.635212+00:00", "level": "INFO", "logger": "production-api", "message": "All components initialized. Ready to serve requests.", "module": "main", "function": "lifespan"}
