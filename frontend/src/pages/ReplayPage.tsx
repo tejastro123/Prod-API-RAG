@@ -1,29 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '@/stores/chat'
 import { relativeTime, formatMs } from '@/lib/utils'
-import type { Message } from '@/types'
+import type { RequestLog } from '@/types'
 import { DevNavbar } from '@/components/DevNavbar'
 
 // ─── ReplayPage ────────────────────────────────────────────────────────────────
 export function ReplayPage() {
-  const { threads, messages } = useChatStore()
-  const [selected, setSelected] = useState<LogEntry | null>(null)
+  const { setActiveThread } = useChatStore()
+  const [selected, setSelected] = useState<RequestLog | null>(null)
+  const [entries, setEntries] = useState<RequestLog[]>([])
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  // Flatten all assistant messages with metadata across all threads
-  type LogEntry = Message & { threadTitle: string; threadId: string }
-
-  const entries: LogEntry[] = []
-  for (const thread of threads) {
-    const msgs = messages[thread.id] ?? []
-    for (const msg of msgs) {
-      if (msg.role === 'assistant' && msg.processing_time_ms !== undefined) {
-        entries.push({ ...msg, threadTitle: thread.title, threadId: thread.id })
-      }
-    }
-  }
-  entries.sort((a, b) => b.timestamp - a.timestamp)
+  useEffect(() => {
+    fetch('/api/request-logs')
+      .then(res => res.json())
+      .then(data => {
+        setEntries(data || [])
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Failed to fetch request logs:', err)
+        setLoading(false)
+      })
+  }, [])
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px 20px 0 20px' }}>
@@ -84,17 +85,17 @@ export function ReplayPage() {
                   WebkitBoxOrient: 'vertical',
                   lineHeight: 1.5,
                 }}>
-                  {e.content}
+                  {e.prompt_raw}
                 </div>
                 <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
                     {e.model_used ?? 'unknown'}
                   </span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                    {formatMs(e.processing_time_ms ?? 0)}
+                    {formatMs(e.latency_ms ?? 0)}
                   </span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>
-                    {e.threadTitle}
+                    {e.thread_id}
                   </span>
                 </div>
               </div>
@@ -130,7 +131,7 @@ export function ReplayPage() {
 
 // ─── RequestDetail ────────────────────────────────────────────────────────────
 function RequestDetail({ entry, onOpenThread }: {
-  entry: Message & { threadTitle: string; threadId: string }
+  entry: RequestLog
   onOpenThread: () => void
 }) {
   const [copied, setCopied] = useState(false)
@@ -145,11 +146,12 @@ function RequestDetail({ entry, onOpenThread }: {
 
   const jsonExport = JSON.stringify({
     id: entry.id,
-    thread: entry.threadTitle,
-    response: entry.content,
+    thread_id: entry.thread_id,
+    prompt: entry.prompt_raw,
+    response: entry.response,
     model_used: entry.model_used,
     cached: entry.cached,
-    processing_time_ms: entry.processing_time_ms,
+    latency_ms: entry.latency_ms,
     security_notes: entry.security_notes ?? [],
     timestamp: new Date(entry.timestamp).toISOString(),
   }, null, 2)
@@ -163,7 +165,7 @@ function RequestDetail({ entry, onOpenThread }: {
             #{entry.id}
           </div>
           <div style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
-            {entry.threadTitle}
+            {entry.thread_id}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 2 }}>
             {new Date(entry.timestamp).toLocaleString()}
@@ -174,8 +176,10 @@ function RequestDetail({ entry, onOpenThread }: {
             {copied ? '✓ Copied' : 'Export JSON'}
           </button>
           <button className="btn btn-ghost btn-sm" onClick={() => {
-            setActiveThread(entry.threadId)
-            onOpenThread()
+            if (entry.thread_id) {
+              setActiveThread(entry.thread_id)
+              onOpenThread()
+            }
           }}>
             Open Thread
           </button>
@@ -188,7 +192,7 @@ function RequestDetail({ entry, onOpenThread }: {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {[
           { label: 'Model', value: entry.model_used ?? '—' },
-          { label: 'Latency', value: formatMs(entry.processing_time_ms ?? 0) },
+          { label: 'Latency', value: formatMs(entry.latency_ms ?? 0) },
           { label: 'Cache', value: entry.cached ? 'HIT' : 'MISS' },
         ].map(({ label, value }) => (
           <div key={label} style={{
@@ -232,7 +236,7 @@ function RequestDetail({ entry, onOpenThread }: {
           fontSize: '0.87rem', lineHeight: 1.7, color: 'var(--text)',
           whiteSpace: 'pre-wrap', maxHeight: 280, overflowY: 'auto',
         }}>
-          {entry.content}
+          {entry.response}
         </div>
       </div>
 

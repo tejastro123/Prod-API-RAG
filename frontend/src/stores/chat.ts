@@ -11,9 +11,11 @@ interface ChatStore {
   messages: Record<string, Message[]>
   isStreaming: boolean
   streamingContent: string
+  mode: 'rag' | 'llm' | 'hybrid'
 
   // Actions
   sendMessage: (content: string) => Promise<void>
+  setMode: (mode: 'rag' | 'llm' | 'hybrid') => void
   createThread: () => void
   deleteThread: (id: string) => void
   setActiveThread: (id: string) => void
@@ -29,6 +31,9 @@ export const useChatStore = create<ChatStore>()(
       messages: {},
       isStreaming: false,
       streamingContent: '',
+      mode: 'hybrid',
+
+      setMode: (mode) => set({ mode }),
 
       createThread: () => {
         const id = nanoid()
@@ -128,7 +133,7 @@ export const useChatStore = create<ChatStore>()(
         }
 
         try {
-          const res = await sendChatMessage(content, activeThreadId)
+          const res = await sendChatMessage(content, activeThreadId, get().mode)
 
           if (!res.ok) {
             const err = await res.json().catch(() => ({ detail: 'Request failed' }))
@@ -338,6 +343,7 @@ export const useChatStore = create<ChatStore>()(
         threads: s.threads,
         activeThreadId: s.activeThreadId,
         messages: s.messages,
+        mode: s.mode,
       }),
     }
   )

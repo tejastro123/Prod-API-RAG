@@ -1,0 +1,2 @@
+{"timestamp": "2026-06-02T11:36:42.592233+00:00", "level": "INFO", "logger": "production-api", "message": "Starting production API...", "module": "main", "function": "lifespan", "environment": "development", "primary_model": "mistral", "tracing_enabled": true}
+{"timestamp": "2026-06-02T11:36:43.274871+00:00", "level": "INFO", "logger": "production-api", "message": "Initializing database...", "module": "main", "function": "lifespan"}

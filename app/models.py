@@ -16,6 +16,7 @@ class ChatRequest(BaseModel):
         description="The user's message to the agent",
     )
     thread_id: str = Field(default="default", description="Conversation thread ID")
+    mode: str = Field(default="hybrid", description="Chat mode: 'rag' (search-only), 'hybrid' (RAG+LLM), or 'llm' (LLM-only)")
 
 
 class ChatResponse(BaseModel):
@@ -55,3 +56,37 @@ class ErrorResponse(BaseModel):
     error: str
     detail: str | None = None
     request_id: str | None = None
+
+class ThreadModel(BaseModel):
+    id: str
+    user_id: str
+    title: str | None = None
+    created_at: int
+    updated_at: int
+    message_count: int
+
+class MessageModel(BaseModel):
+    id: str
+    thread_id: str
+    role: str
+    content: str
+    model_used: str | None = None
+    cached: bool = False
+    processing_time_ms: float | None = None
+    security_notes: list[str] | None = None
+    created_at: int
+
+class RequestLogModel(BaseModel):
+    id: str
+    thread_id: str | None = None
+    user_id: str | None = None
+    prompt_raw: str
+    prompt_sanitized: str | None = None
+    response: str | None = None
+    model_used: str | None = None
+    cached: bool | None = None
+    latency_ms: float | None = None
+    cache_hit: bool | None = None
+    security_notes: list[str] | None = None
+    error: str | None = None
+    timestamp: int

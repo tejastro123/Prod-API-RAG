@@ -17,12 +17,14 @@ class Settings(BaseSettings):
     primary_model: str = "mistral"
     fallback_model: str = "llama3"
     
-    # LangSmith
+    # LangSmith — reads LANGSMITH_API_KEY and LANGSMITH_PROJECT from .env
     langchain_tracing_v2: bool = True
-    langchain_api_key: str = ""
-    langchain_project: str = "production-api"
-    
-    
+    langsmith_api_key: str = ""
+    langsmith_project: str = "prod-api"
+
+    # Database — reads DATABASE_URL from .env (Neon PostgreSQL in cloud, SQLite locally)
+    database_url: str = "sqlite+aiosqlite:///rag_app.db"
+
     # Application
     app_env: str = "development"
     log_level: str = "INFO"

@@ -49,12 +49,13 @@ export async function* parseSSE(
 
 export async function sendChatMessage(
   message: string,
-  threadId = 'default'
+  threadId = 'default',
+  mode = 'rag'
 ): Promise<Response> {
   return fetch(`${BASE_URL}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, thread_id: threadId }),
+    body: JSON.stringify({ message, thread_id: threadId, mode }),
   })
 }
 

@@ -79,6 +79,22 @@ export interface Thread {
   messageCount: number
 }
 
+export interface RequestLog {
+  id: string
+  thread_id?: string
+  user_id?: string
+  prompt_raw: string
+  prompt_sanitized?: string
+  response?: string
+  model_used?: string
+  cached?: boolean
+  latency_ms?: number
+  cache_hit?: boolean
+  security_notes?: string[]
+  error?: string
+  timestamp: number
+}
+
 // ─── Stream Event Schema ──────────────────────────────────────────────────────
 
 export const StreamEventSchema = z.discriminatedUnion('event', [

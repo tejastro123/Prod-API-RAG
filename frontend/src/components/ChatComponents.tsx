@@ -433,8 +433,9 @@ export function ChatInput() {
   const [selectedModel, setSelectedModel] = useState<'mistral' | 'llama3' | 'auto'>('mistral')
   const [webSearchEnabled, setWebSearchEnabled] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   
-  const { sendMessage, isStreaming } = useChatStore()
+  const { sendMessage, isStreaming, mode, setMode } = useChatStore()
   const ref = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -446,21 +447,39 @@ export function ChatInput() {
     }
   }, [value])
 
-  const submit = () => {
+  const submit = async () => {
     const trimmed = value.trim()
     if (!trimmed && !selectedFile) return
-    if (isStreaming) return
+    if (isStreaming || isUploading) return
     
-    // In a fully upgraded version, the selectedFile and webSearchEnabled states
-    // would be packaged in the payload, but for now we send the text.
+    let textToSend = trimmed
+
+    if (selectedFile) {
+      setIsUploading(true)
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      
+      try {
+        const res = await fetch('/api/documents/upload', {
+          method: 'POST',
+          body: formData,
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Upload failed')
+        
+        textToSend = `[Uploaded Document: ${selectedFile.name} (${data.pages || 0} pages, ${data.chunks_created || 0} chunks)]\n\n${trimmed}`
+      } catch (err: any) {
+        alert('Failed to upload document: ' + err.message)
+        setIsUploading(false)
+        return
+      }
+      setIsUploading(false)
+    }
+    
     setValue('')
     setSelectedFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
     
-    let textToSend = trimmed
-    if (selectedFile) {
-      textToSend += `\n\n*(Sent with attached file: ${selectedFile.name})*`
-    }
     sendMessage(textToSend)
   }
 
@@ -583,6 +602,117 @@ export function ChatInput() {
                 </svg>
               </button>
 
+              {/* Chat Mode Switcher */}
+              <div
+                title="Select chat mode"
+                style={{
+                  display: 'inline-flex',
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '10px',
+                  padding: '2px',
+                  gap: '2px',
+                  marginRight: '4px',
+                }}
+              >
+                {/* Search mode: vector search only, no LLM */}
+                <button
+                  onClick={() => setMode('rag')}
+                  disabled={isStreaming}
+                  title="Search Mode: Returns raw document snippets from your knowledge base without LLM synthesis"
+                  style={{
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '4px 10px',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    cursor: isStreaming ? 'not-allowed' : 'pointer',
+                    background: mode === 'rag'
+                      ? 'linear-gradient(135deg, #0ea5e9, #6366f1)'
+                      : 'transparent',
+                    color: mode === 'rag' ? '#fff' : 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 180ms cubic-bezier(0.4,0,0.2,1)',
+                    boxShadow: mode === 'rag' ? '0 1px 6px rgba(99,102,241,0.35)' : 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {/* Magnifying glass icon */}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  Search
+                </button>
+
+                {/* Hybrid mode: RAG + LLM synthesis */}
+                <button
+                  onClick={() => setMode('hybrid')}
+                  disabled={isStreaming}
+                  title="Hybrid Mode: Retrieves relevant documents and synthesizes a grounded answer using the LLM"
+                  style={{
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '4px 10px',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    cursor: isStreaming ? 'not-allowed' : 'pointer',
+                    background: mode === 'hybrid'
+                      ? 'linear-gradient(135deg, #10b981, #6366f1)'
+                      : 'transparent',
+                    color: mode === 'hybrid' ? '#fff' : 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 180ms cubic-bezier(0.4,0,0.2,1)',
+                    boxShadow: mode === 'hybrid' ? '0 1px 6px rgba(16,185,129,0.35)' : 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {/* Merge/sparkle icon */}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+                  </svg>
+                  Hybrid
+                </button>
+
+                {/* LLM-only mode: no retrieval */}
+                <button
+                  onClick={() => setMode('llm')}
+                  disabled={isStreaming}
+                  title="Chat Mode: General-purpose LLM assistant — no document retrieval"
+                  style={{
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '4px 10px',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    cursor: isStreaming ? 'not-allowed' : 'pointer',
+                    background: mode === 'llm'
+                      ? 'linear-gradient(135deg, #f59e0b, #ef4444)'
+                      : 'transparent',
+                    color: mode === 'llm' ? '#fff' : 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 180ms cubic-bezier(0.4,0,0.2,1)',
+                    boxShadow: mode === 'llm' ? '0 1px 6px rgba(245,158,11,0.35)' : 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {/* Chat bubble icon */}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Chat
+                </button>
+              </div>
+
               {/* Model Selector */}
               <select
                 value={selectedModel}
@@ -609,7 +739,7 @@ export function ChatInput() {
               <button
                 className="btn btn-primary"
                 onClick={submit}
-                disabled={(!value.trim() && !selectedFile) || isStreaming || overLimit}
+                disabled={(!value.trim() && !selectedFile) || isStreaming || isUploading || overLimit}
                 style={{
                   borderRadius: '50%',
                   width: 32,
@@ -621,7 +751,7 @@ export function ChatInput() {
                   minWidth: 'auto',
                 }}
               >
-                {isStreaming ? (
+                {isStreaming || isUploading ? (
                   <span className="spinner" style={{ width: 14, height: 14 }} />
                 ) : (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
